@@ -1,6 +1,6 @@
 <?php
 
-namespace ezcache\cache;
+namespace Ezcache\Cache;
 
 interface CacheExceptionInterface {
 

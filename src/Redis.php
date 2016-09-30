@@ -1,6 +1,6 @@
 <?php
 
-namespace cache;
+namespace Ezcache\Cache;
 
 class Redis implements CacheInterface {
 
