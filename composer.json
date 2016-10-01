@@ -1,5 +1,27 @@
 {
-  "require-dev": {
-    "phpunit/phpunit": "5.5.*"
-  }
+    "name": "ezcache",
+    "type": "library",
+    "description": "Library to help using multi cache systems throught PHP language in the easy way.",
+    "version": "1.0.0",
+    "keywords": ["php","cache","ez","filecache","easy","memcached","redis", "memcache"],
+    "homepage": "https://github.com/nielsenmg/ezcache",
+    "license": "MIT",
+    "minimum-stability": "beta",
+    "authors": [
+        {
+            "name": "Nielsen Martins Gonçalves",
+            "email": "ni_elsen@hotmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "5.5.*",
+        "mockery/mockery": "dev-master",
+        "mikey179/vfsStream": "~1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ezcache\\Cache\\": "src/"
+        }
+    }
 }
