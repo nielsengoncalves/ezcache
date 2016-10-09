@@ -4,59 +4,55 @@ namespace Ezcache\Cache;
 
 use DateInterval;
 use DateTime;
-use RecursiveDirectoryIterator;
-use FilesystemIterator;
-use RecursiveIteratorIterator;
 use Exception;
 
+/**
+ * Class FileCache
+ *
+ * @package Ezcache\Cache
+ * @author nielsengoncalves
+ */
 class FileCache implements CacheInterface {
 
     const JSON_FORMAT  = '.json';
-    const TXT_FORMAT   = '.txt';
-    const CACHE_FORMAT = '.cache';
 
     private $cacheDirectory;
     private $ttl;
     private $lastError = [];
+    private $namespace;
 
     /**
      * FileCache constructor.
      *
-     * @param string $directory the directory where cache will be stored/retrieved
-     * @param int $ttl cache time to live in seconds
+     * @param string $directory the directory where cache operations will happen.
+     * @param int $ttl the cache life time in seconds (0 = Forever).
+     * @param string $namespace the cache namespace.
      */
-    public function __construct(string $directory, int $ttl = 0) {
+    public function __construct(string $directory, int $ttl = 0, string $namespace = null) {
         $this->setCacheDirectory($directory);
         $this->ttl = $ttl;
-    }
-
-    /**
-     * Returns a Cache Item representing the specified key.
-     *
-     * @param string $key the cache key
-     *
-     * @return mixed the data found on cache
-     */
-    public function get(string $key) : array {
-
-        $filePath = $this->getFilePath($key);
-        $fileData = json_decode(file_get_contents($filePath), true);
-
-        if (empty($fileData) || (date('Y-m-d H:i:s') > $fileData['expires_at'])) {
-            return ['is_hit' => false, 'value' => null];
+        if ($namespace !== null) {
+            $this->setNamespace($namespace);
         }
-
-        return ['is_hit' => true, 'value' => json_decode($fileData)['value']];
     }
 
     /**
-     * Set the value identified by key to cache
+     * Set the cache namespace.
      *
-     * @param string $key the key
-     * @param mixed $value the value
-     * @param int|null $ttl time to live in seconds
+     * @param string $namespace the cache namespace.
+     */
+    public function setNamespace(string $namespace) {
+        $this->namespace = trim($namespace, '//, ');
+    }
+
+    /**
+     * Set a value to a key on cache.
      *
-     * @return bool true on succes or false on failure
+     * @param string $key the key to be setted.
+     * @param mixed $value the correspondent value of that cache key.
+     * @param int|null $ttl the cache life time in seconds (If no value passed will use the default value).
+     *
+     * @return bool true on success or false on failure.
      */
     public function set(string $key, $value, int $ttl = null) : bool {
 
@@ -64,24 +60,17 @@ class FileCache implements CacheInterface {
 
         try {
 
-            $file = fopen($filePath, 'w');
-            if (!$file) {
-                throw new CacheException(sprintf("Failed to open the file %s for writing.", $filePath));
+            if (!$file = fopen($filePath, 'w')) {
+                throw new CacheException("Failed to open the file $filePath for writing.");
             }
 
-            // Uses the ttl passed on function call or uses the default value
-            $ttl = $ttl ?? $this->ttl;
-
-            if (empty($ttl)) {
-                $interval = new DateInterval("P100Y");
-            } else {
-                $interval = new DateInterval("PT{$ttl}S");
-            }
-
-            $date = new DateTime();
+            // Uses the ttl passed in the function call or uses the default value
+            $ttl      = $ttl ?? $this->ttl;
+            $interval = new DateInterval(empty($ttl) ? 'P100Y' : "PT{$ttl}S");
+            $date     = new DateTime();
 
             $fileData = [
-                'value'      => $value,
+                'value'      => serialize($value),
                 'created_at' => $date->format('Y-m-d H:i:s'),
                 'expires_at' => $date->add($interval)->format('Y-m-d H:i:s')
             ];
@@ -96,100 +85,112 @@ class FileCache implements CacheInterface {
     }
 
     /**
-     * Delete cache especified by key
+     * Return the valid cache value stored with the given key.
      *
-     * @param string $key the cache key to be deleted
+     * @param string $key the cache key to be found.
      *
-     * @return bool true on success or false on failure
+     * @return mixed the data found.
+     */
+    public function get(string $key) {
+
+        $fileData = $this->getFileData($key);
+
+        if (empty($fileData) || (date('Y-m-d H:i:s') > $fileData['expires_at'])) {
+            return null;
+        }
+
+        return unserialize($fileData['value']);
+    }
+
+    /**
+     * Delete cache especified by key.
+     *
+     * @param string $key the cache key to be deleted.
+     *
+     * @return bool true on success or false on failure.
      */
     public function delete(string $key) : bool {
         return unlink($this->getFilePath($key));
     }
 
     /**
-     * Check if given key exists and is valid on cache
+     * Check if given key exists and is valid on cache.
      *
-     * @param string $key the key to be verified
+     * @param string $key the cache key to be verified.
+     * @param bool $isValid if set to true the function will verify if it is valid (not expired).
      *
-     * @return bool true if exists false otherwise
+     * @return bool true if exists false otherwise.
      */
-    public function exists(string $key) : bool {
-        return $this->get($key)["is_hit"];
+    public function exists(string $key, bool $isValid = false) : bool {
+
+        $fileData = $this->getFileData($key);
+
+        if (!$fileData || ($isValid && date('Y-m-d H:i:s') > $fileData['expires_at'])) {
+            return false;
+        }
+
+        return true;
     }
 
+    /**
+     * Renew the cache expiration time.
+     *
+     * @param string $key the cache key to be renewed.
+     * @param int|null $ttl extra time to live in seconds.
+     *
+     * @return bool true on success or false on failure.
+     */
     public function renew(string $key, int $ttl = null) : bool {
 
         $filePath = $this->getFilePath($key);
-        $fileData = json_decode(file_get_contents($filePath), true);
+        $fileData = $this->getFileData($key);
 
         if (empty($fileData)) {
             return false;
         }
 
-        if (empty($ttl = $ttl ?? $this->ttl)) {
-            $interval = new DateInterval("P100Y");
-        } else {
-            $interval = new DateInterval("PT{$ttl}S");
-        }
-
-        $fileData["expires_at"] = (new DateTime())->add($interval)->format("Y-m-d H:i:s");
+        $ttl = $ttl ?? $this->ttl;
+        $interval = new DateInterval(empty($ttl) ? 'P100Y' : "PT{$ttl}S");
+        $fileData['expires_at'] = (new DateTime())->add($interval)->format('Y-m-d H:i:s');
         file_put_contents($filePath, json_encode($fileData));
         return true;
     }
 
     /**
-     * Clear the cache directory
+     * Clear the cache directory.
      *
-     * @param string|null $cacheDirectory
-     * @return bool
+     * @param string|null $namespace the cache namespace.
+     *
+     * @return bool true on success or false on failure.
      */
-    public function clear(string $cacheDirectory) : bool {
-
-        $directory = $cacheDirectory ?? $this->cacheDirectory;
-
-        try {
-            $rdi = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
-            $ri  = new RecursiveIteratorIterator($rdi, RecursiveIteratorIterator::CHILD_FIRST);
-
-            foreach ($ri as $file) {
-                is_dir($file) ?  $this->clear($file) : unlink($file);
-            }
-
-        } catch (Exception $exc) {
-            $this->setLastError($exc);
-            return false;
-        }
-
-        return true;
+    public function clear(string $namespace = null) : bool {
+        //todo implement this.
     }
 
     /**
-     * Set the directory where cache will be stored or retrieved.
+     * Set the directory where cache operations will happen.
      *
-     * @param string $cacheDirectory the directory where cache will be stored or retrieved
+     * @param string $cacheDirectory the directory where cache operations will happen.
      *
-     * @return bool true on success or false on failure
+     * @return bool true on success or false on failure.
      */
     public function setCacheDirectory(string $cacheDirectory) : bool {
+
         $this->cacheDirectory = null;
-        if (!file_exists($cacheDirectory)) {
-            if (!$mkdir = mkdir($cacheDirectory, 0755, true) && $this->cacheDirectory = $cacheDirectory) {
-                $this->setLastError(new CacheException("Failed to create the directory {$cacheDirectory}."));
-                return false;
-            }
-        } else if (!is_writable($cacheDirectory)) {
-            $this->setLastError(new CacheException("Not enough writing permissions to the directory {$cacheDirectory}."));
+
+        if (!((file_exists($cacheDirectory) && is_writable($cacheDirectory)) || mkdir($cacheDirectory, 0755, true))) {
+            $this->setLastError(new Exception("Failed to use $cacheDirectory as cache directory."));
             return false;
         }
-        $this->cacheDirectory = $cacheDirectory;
 
+        $this->cacheDirectory = $cacheDirectory;
         return true;
     }
 
     /**
-     * Return the last error that ocurred using the lib
+     * Return the last error occurred.
      *
-     * @return array the array with the last error data
+     * @return array the array with the last error data.
      */
     public function getLastError() : array {
         return $this->lastError;
@@ -203,7 +204,8 @@ class FileCache implements CacheInterface {
      * @return string the file path
      */
     private function getFilePath(string $key) : string {
-        return DIRECTORY_SEPARATOR . trim($this->cacheDirectory, '//, ') . DIRECTORY_SEPARATOR . $key . self::JSON_FORMAT;
+        $ds = DIRECTORY_SEPARATOR;
+        return $this->cacheDirectory . (!empty($this->namespace) ? $this->namespace . $ds : '') . $key . self::JSON_FORMAT;
     }
 
     /**
@@ -212,8 +214,21 @@ class FileCache implements CacheInterface {
      * @param Exception $ex the exception
      */
     private function setLastError(Exception $ex) {
-        $this->lastError["code"]    = $ex->getCode();
-        $this->lastError["message"] = $ex->getMessage();
-        $this->lastError["trace"]   = $ex->getTraceAsString();
+        $this->lastError['code']    = $ex->getCode();
+        $this->lastError['message'] = $ex->getMessage();
+        $this->lastError['trace']   = $ex->getTraceAsString();
+    }
+
+    /**
+     * Get the file data
+     *
+     * @param string $key the cache key
+     *
+     * @return array with the file data or empty array when no data found
+     */
+    private function getFileData(string $key) : array {
+        $filePath = $this->getFilePath($key);
+        $contents = @file_get_contents($filePath);
+        return !$contents ? [] : json_decode($contents, true);
     }
 }

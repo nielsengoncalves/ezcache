@@ -16,7 +16,7 @@ class MemCached  implements CacheInterface {
 
     }
 
-    public function exists(string $key) : bool {
+    public function exists(string $key, bool $isValid = false) : bool {
 
     }
 
