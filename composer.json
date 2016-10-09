@@ -23,5 +23,10 @@
         "psr-4": {
             "Ezcache\\Cache\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EzcacheTest\\Cache\\": "tests/"
+        }
     }
 }
