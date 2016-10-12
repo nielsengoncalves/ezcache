@@ -1,0 +1,8 @@
+language: php
+
+php:
+  - '7.0'
+
+before_install: phpenv config-add redis.ini memcached.ini memcache.ini apc.ini xdebug.ini
+
+install: composer install
