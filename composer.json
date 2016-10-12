@@ -1,7 +1,7 @@
 {
-    "name": "ezcache",
+    "name": "nielsenmg/ezcache",
     "type": "library",
-    "description": "Library to help using multi cache systems throught PHP language in the easy way.",
+    "description": "Easy cache management library for PHP applications.",
     "version": "1.0.0",
     "keywords": ["php","cache","ez","filecache","easy","memcached","redis", "memcache"],
     "homepage": "https://github.com/nielsenmg/ezcache",
