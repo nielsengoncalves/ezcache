@@ -3,7 +3,7 @@ Ezcache is an easy cache management library for PHP applications that supports [
 
 ## Installation
 
-Ezcache is available on [Packagist](https://packagist.org/), you can install it using [Composer](https://getcomposer.org/).
+Ezcache is available on [Packagist](https://packagist.org/packages/nielsenmg/ezcache), you can install it using [Composer](https://getcomposer.org/).
 
 ```
 composer require nielsenmg/ezcache
