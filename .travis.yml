@@ -3,6 +3,9 @@ language: php
 php:
   - '7.0'
 
-before_install: phpenv config-add redis.ini memcached.ini memcache.ini xdebug.ini
+before_install:
+  - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension = memcache.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 install: composer install
