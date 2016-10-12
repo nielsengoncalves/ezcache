@@ -9,7 +9,7 @@ Ezcache is available on [Packagist](https://packagist.org/packages/nielsenmg/ezc
 composer require nielsenmg/ezcache
 ```
 
-Than to install it:
+Then to install it:
 
 ```
 composer install
