@@ -14,7 +14,7 @@ use Exception;
  */
 class FileCache implements CacheInterface {
 
-    const JSON_FORMAT  = '.json';
+    const JSON_FORMAT = '.json';
 
     private $cacheDirectory;
     private $ttl;
@@ -122,14 +122,8 @@ class FileCache implements CacheInterface {
      * @return bool true if exists false otherwise.
      */
     public function exists(string $key, bool $isValid = false) : bool {
-
         $fileData = $this->getFileData($key);
-
-        if (empty($fileData) || ($isValid && date('Y-m-d H:i:s') > $fileData['expires_at'])) {
-            return false;
-        }
-
-        return true;
+        return !(empty($fileData) || ($isValid && date('Y-m-d H:i:s') > $fileData['expires_at']));
     }
 
     /**
