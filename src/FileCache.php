@@ -125,7 +125,7 @@ class FileCache implements CacheInterface {
 
         $fileData = $this->getFileData($key);
 
-        if (!$fileData || ($isValid && date('Y-m-d H:i:s') > $fileData['expires_at'])) {
+        if (empty($fileData) || ($isValid && date('Y-m-d H:i:s') > $fileData['expires_at'])) {
             return false;
         }
 
