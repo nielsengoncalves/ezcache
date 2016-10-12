@@ -11,13 +11,19 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
 
     use PHPUnitUtilsTrait;
 
+    /** @var FileCache */
     private $file;
+
+    /** @var \ReflectionMethod */
     private $getFileData;
+    private $vfsStream;
+    private $dir;
 
     public function setUp() {
-        vfsStream::setup();
+        $this->vfsStream = vfsStream::setup();
         $this->getFileData = $this->getPrivateMethod('Ezcache\Cache\FileCache', 'getFileData');
-        $this->file = new FileCache(vfsStream::url('cache'));
+        $this->dir = $this->vfsStream->url() . '/cache';
+        $this->file = new FileCache($this->dir);
     }
 
     public function tearDown() {
@@ -29,7 +35,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetNamespace() {
 
-        $file = new FileCache(vfsStream::url('cache'), 0, 'namespacename1');
+        $file = new FileCache($this->dir, 0, 'namespacename1');
         $property = $this->getPrivateProperty('Ezcache\Cache\FileCache', 'namespace');
 
         // Checks if constructor namespace is working
@@ -76,10 +82,32 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Tests methods with expired key
+     */
+    public function testExpiredCache() {
+        $oneSecExp = 'OneSecExpirationCacheTest';
+        $this->file->set($oneSecExp, 'value', 1);
+
+        //after this, the cache is expired
+        sleep(2);
+        $exists = $this->file->exists($oneSecExp, true);
+        $this->assertEquals(false, $exists, 'Asserting that key exists on cache and is not expired.');
+        $exists = $this->file->exists($oneSecExp);
+        $this->assertEquals(true, $exists, 'Asserting that key exists on cache.');
+
+        $data = $this->file->get($oneSecExp);
+        $this->assertEquals(null, $data, 'Asserting that data is empty because cache is expired.');
+
+        $this->file->renew($oneSecExp, 10);
+        $data = $this->file->get($oneSecExp);
+        $this->assertEquals('value', $data, 'Asserting that the cache renew worked.');
+    }
+
+    /**
      * Tests no expiration cache
      */
     private function withNoExpirationTest() {
-        $noExpirationInt = 'NoExpiration';
+        $noExpirationInt = 'NoExpirationCacheTest';
         $this->file->set($noExpirationInt, 10);
         $fileData = $this->getFileData->invokeArgs($this->file, [$noExpirationInt]);
         $this->assertGreaterThanOrEqual(3153600000, strtotime($fileData["expires_at"]) - strtotime($fileData["created_at"]), 'Asserting that cache expiration is bigger or equals a year with default value.');
@@ -93,7 +121,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
      * Tests cache with expiration time
      */
     private function withExpirationTest() {
-        $oneMinuteExp = 'OneMinuteExpiration';
+        $oneMinuteExp = 'OneMinuteExpirationCacheTest';
         $this->file->set($oneMinuteExp, 'val1', 60);
         $fileData = $this->getFileData->invokeArgs($this->file, [$oneMinuteExp]);
         $this->assertEquals(60, strtotime($fileData["expires_at"]) - strtotime($fileData["created_at"]), 'Asserting that cache expiration is one minute.');
@@ -106,7 +134,7 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
      * @param mixed $value the value of given type
      */
     private function typeTest(string $type, $value) {
-        $fileName = ucfirst($type) . 'Type';
+        $fileName = ucfirst($type) . 'TypeCacheTest';
         $this->file->set($fileName, $value);
         $data = $this->file->get($fileName);
         $this->assertEquals($value, $data);
