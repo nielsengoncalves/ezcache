@@ -4,6 +4,10 @@ namespace Ezcache\Cache;
 
 class MemCached  implements CacheInterface {
 
+    public function setNamespace(string $namespace) {
+
+    }
+
     public function get(string $key) : array {
 
     }
@@ -24,7 +28,7 @@ class MemCached  implements CacheInterface {
 
     }
 
-    public function clear() : bool {
+    public function clear(string $namespace = null) : bool {
 
     }
 }
