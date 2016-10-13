@@ -2,6 +2,9 @@
 
 namespace Ezcache\Cache;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Redis implements CacheInterface {
 
     public function setNamespace(string $namespace) {
