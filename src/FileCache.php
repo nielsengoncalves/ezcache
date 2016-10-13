@@ -58,30 +58,18 @@ class FileCache implements CacheInterface {
 
         $filePath = $this->getFilePath($key);
 
-        try {
+        // Uses the ttl passed in the function call or uses the default value
+        $ttl      = $ttl ?? $this->ttl;
+        $interval = new DateInterval(empty($ttl) ? 'P100Y' : "PT{$ttl}S");
+        $date     = new DateTime();
 
-            if (!$file = fopen($filePath, 'w')) {
-                throw new CacheException("Failed to open the file $filePath for writing.");
-            }
+        $fileData = json_encode([
+            'value'      => serialize($value),
+            'created_at' => $date->format('Y-m-d H:i:s'),
+            'expires_at' => $date->add($interval)->format('Y-m-d H:i:s')
+        ]);
 
-            // Uses the ttl passed in the function call or uses the default value
-            $ttl      = $ttl ?? $this->ttl;
-            $interval = new DateInterval(empty($ttl) ? 'P100Y' : "PT{$ttl}S");
-            $date     = new DateTime();
-
-            $fileData = [
-                'value'      => serialize($value),
-                'created_at' => $date->format('Y-m-d H:i:s'),
-                'expires_at' => $date->add($interval)->format('Y-m-d H:i:s')
-            ];
-
-            fwrite($file, json_encode($fileData));
-            fclose($file);
-            return true;
-        } catch (Exception $exc) {
-            $this->setLastError($exc);
-            return false;
-        }
+        return file_put_contents($filePath, $fileData);
     }
 
     /**
