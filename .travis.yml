@@ -10,4 +10,4 @@ before_install:
 install: composer install
 
 after_success:
-  - travis_retry php vendor/bin/coveralls -v
+  - php vendor/bin/coveralls -v
