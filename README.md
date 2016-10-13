@@ -30,9 +30,13 @@ composer install
 ##Usage
 There are three types of caching modes supported:
 
-1. File Caching [[Documentation]]()
-2. Memcached (under development)
-3. Redis (under development)
+1. **File Caching** - [Documentation]()
+2. **Memcached** (under development)
+3. **Redis** (under development)
+
+##License
+
+This library is under the MIT License, see the complete license [here](https://raw.githubusercontent.com/nielsenmg/ezcache/master/LICENSE)
 
 
 
