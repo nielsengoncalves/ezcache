@@ -8,3 +8,6 @@ before_install:
   - echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 install: composer install
+
+after_success:
+  - travis_retry php vendor/bin/coveralls -v
