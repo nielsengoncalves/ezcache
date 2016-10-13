@@ -223,6 +223,14 @@ class FileCache implements CacheInterface {
     private function getFileData(string $key) : array {
         $filePath = $this->getFilePath($key);
         $contents = @file_get_contents($filePath);
-        return !$contents ? [] : json_decode($contents, true);
+
+        if (!$contents) {
+            return [];
+        } else if (($data = json_decode($contents, true)) === null) {
+            $this->setLastError(new CacheException(sprintf("Failed to decode the %s data.", $key)));
+            return [];
+        }
+
+        return $data;
     }
 }
