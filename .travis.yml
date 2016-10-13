@@ -9,5 +9,8 @@ before_install:
 
 install: composer install
 
+before_script:
+  - mkdir -p build/logs
+
 after_success:
   - php vendor/bin/coveralls -v
