@@ -1,8 +1,16 @@
 # Ezcache
 [![Build Status](https://travis-ci.org/nielsenmg/ezcache.svg?branch=master)](https://travis-ci.org/nielsenmg/ezcache)
 [![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/nielsenmg/ezcache/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/nielsenmg/ezcache/?branch=master)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nielsenmg/ezcache/master/LICENSE)
 
 Ezcache is an easy cache management library for PHP applications and supports [Redis](http://redis.io/), [Memcached](https://memcached.org/) and File Caching.
+
+##Prerequisites
+
+ - PHP 7.0
+ - [Redis](http://redis.io/download)
+ - [Memcached](https://github.com/memcached/memcached/wiki/Install)
+
 
 ## Installation
 
