@@ -7,7 +7,7 @@ Ezcache is an easy cache management library for PHP applications and supports [R
 
 ##Prerequisites
 
- - PHP 7.0
+ - PHP 7.0 or above
  - [Redis](http://redis.io/download)
  - [Memcached](https://github.com/memcached/memcached/wiki/Install)
 
