@@ -18,4 +18,5 @@ script:
 after_success:
   - php vendor/bin/coveralls -v
   - wget https://scrutinizer-ci.com/ocular.phar
-  - php ocular.phar code-coverage:upload --format=php-clover build/logs/clover.xml
+  - mv build/logs/clover.xml build/logs/coverage.clover
+  - php ocular.phar code-coverage:upload --format=php-clover build/logs/coverage.clover
