@@ -103,6 +103,23 @@ class FileCacheTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('value', $data, 'Asserting that the cache renew worked.');
     }
 
+    public function testClear() {
+        $this->file->set("clear1", 100);
+        $this->file->set("clear2", 200);
+
+        $get1 = $this->file->get("clear1");
+        $get2 = $this->file->get("clear2");
+
+        $this->assertTrue($get1 == 100 && $get2 == 200, "Asserting that get1 and get2 were sucessefuly created on cache.");
+
+        $clear = $this->file->clear();
+
+        $get1 = $this->file->get("clear1");
+        $get2 = $this->file->get("clear2");
+
+        $this->assertTrue($clear == true && [$get1, $get2] === [null, null], "Asserting that all created cache files were cleared.");
+    }
+
     /**
      * Tests no expiration cache
      */

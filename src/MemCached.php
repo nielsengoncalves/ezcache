@@ -7,7 +7,7 @@ namespace Ezcache\Cache;
  */
 class MemCached implements CacheInterface {
 
-    public function setNamespace(string $namespace) {
+    public function setNamespace(string $namespace) : bool {
 
     }
 

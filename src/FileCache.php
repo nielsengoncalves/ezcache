@@ -41,8 +41,16 @@ class FileCache implements CacheInterface {
      *
      * @param string $namespace the cache namespace.
      */
-    public function setNamespace(string $namespace) {
-        $this->namespace = trim($namespace, '//, ');
+    public function setNamespace(string $namespace) : bool {
+        $namespace = trim($namespace, '//, ');
+        $dir = $this->getBasePath($namespace);
+
+        if ((is_dir($dir) && is_writable($dir)) || mkdir($dir, 0755)) {
+            $this->namespace = $namespace;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -139,14 +147,24 @@ class FileCache implements CacheInterface {
     }
 
     /**
-     * Clear the cache directory.
+     * Clear all cache files at directory.
      *
      * @param string|null $namespace the cache namespace.
      *
      * @return bool true on success or false on failure.
      */
     public function clear(string $namespace = null) : bool {
-        //todo implement this.
+
+        $dir = $this->getBasePath($namespace);
+        $files = $this->streamSafeGlob($dir, '*.cache' . self::JSON_FORMAT);
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                if (!unlink($file)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -157,14 +175,12 @@ class FileCache implements CacheInterface {
      * @return bool true on success or false on failure.
      */
     public function setCacheDirectory(string $cacheDirectory) : bool {
-
         $this->cacheDirectory = null;
-
+        $cacheDirectory = rtrim($cacheDirectory, '//, ') . '/';
         if (!((file_exists($cacheDirectory) && is_writable($cacheDirectory)) || mkdir($cacheDirectory, 0755, true))) {
             $this->setLastError(new Exception("Failed to use $cacheDirectory as cache directory."));
             return false;
         }
-
         $this->cacheDirectory = $cacheDirectory;
         return true;
     }
@@ -179,15 +195,23 @@ class FileCache implements CacheInterface {
     }
 
     /**
-     * Return the path where the file should be located.
+     * Return the path where the cache file should be located.
      *
      * @param string $key the cache key
      *
      * @return string the file path
      */
     private function getFilePath(string $key) : string {
-        $ds = DIRECTORY_SEPARATOR;
-        return $this->cacheDirectory . (!empty($this->namespace) ? $this->namespace . $ds : '') . $key . self::JSON_FORMAT;
+        return $this->getBasePath($this->namespace) . $key . ".cache" . self::JSON_FORMAT;
+    }
+
+    /**
+     * Return the base path where the cache files should be located.
+     *
+     * @return string the file path
+     */
+    private function getBasePath(string $namespace = null) : string {
+        return $this->cacheDirectory . (!empty($namespace) ? $namespace . DIRECTORY_SEPARATOR : '');
     }
 
     /**
@@ -214,11 +238,36 @@ class FileCache implements CacheInterface {
 
         if (!$contents) {
             return [];
-        } else if (($data = json_decode($contents, true)) === null) {
+        } else if (($data = json_decode($contents, true)) === null && json_last_error() != JSON_ERROR_NONE) {
             $this->setLastError(new CacheException(sprintf("Failed to decode the %s data.", $key)));
             return [];
         }
 
         return $data;
+    }
+
+    /**
+     * Glob that is safe with streams (vfs for example)
+     *
+     * @param string $directory the directory
+     * @param string $filePattern the file pattern
+     *
+     * @return array containing match files
+     */
+    private function streamSafeGlob($directory, $filePattern) : array {
+        $files = scandir($directory);
+        $found = [];
+
+        foreach ($files as $filename) {
+            if (in_array($filename, ['.', '..'])) {
+                continue;
+            }
+
+            if (fnmatch($filePattern, $filename)) {
+                $found[] = "{$directory}/{$filename}";
+            }
+        }
+
+        return $found;
     }
 }
