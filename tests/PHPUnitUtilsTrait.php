@@ -6,33 +6,37 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 
-trait PHPUnitUtilsTrait {
-
+trait PHPUnitUtilsTrait
+{
     /**
-     * Get private property from a class
+     * Get private property from a class.
      *
-     * @param 	string $className the class name
-     * @param 	string $propertyName the property name
+     * @param string $className    the class name
+     * @param string $propertyName the property name
      *
-     * @return	ReflectionProperty
+     * @return ReflectionProperty
      */
-    public function getPrivateProperty($className, $propertyName) : ReflectionProperty {
+    public function getPrivateProperty($className, $propertyName) : ReflectionProperty
+    {
         $property = (new ReflectionClass($className))->getProperty($propertyName);
         $property->setAccessible(true);
+
         return $property;
     }
 
     /**
-     * Get private method from a class
+     * Get private method from a class.
      *
-     * @param 	string $className the class name
-     * @param 	string $methodName the method name
+     * @param string $className  the class name
+     * @param string $methodName the method name
      *
-     * @return	ReflectionMethod
+     * @return ReflectionMethod
      */
-    public function getPrivateMethod($className, $methodName) : ReflectionMethod {
+    public function getPrivateMethod($className, $methodName) : ReflectionMethod
+    {
         $method = (new ReflectionClass($className))->getMethod($methodName);
         $method->setAccessible(true);
+
         return $method;
     }
 }
