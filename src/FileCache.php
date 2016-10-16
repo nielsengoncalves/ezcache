@@ -14,6 +14,8 @@ use Exception;
  */
 class FileCache implements CacheInterface {
 
+    use CacheUtilsTrait;
+
     const JSON_FORMAT = '.json';
 
     private $cacheDirectory;
@@ -244,30 +246,5 @@ class FileCache implements CacheInterface {
         }
 
         return $data;
-    }
-
-    /**
-     * Glob that is safe with streams (vfs for example)
-     *
-     * @param string $directory the directory
-     * @param string $filePattern the file pattern
-     *
-     * @return array containing match files
-     */
-    private function streamSafeGlob($directory, $filePattern) : array {
-        $files = scandir($directory);
-        $found = [];
-
-        foreach ($files as $filename) {
-            if (in_array($filename, ['.', '..'])) {
-                continue;
-            }
-
-            if (fnmatch($filePattern, $filename)) {
-                $found[] = "{$directory}/{$filename}";
-            }
-        }
-
-        return $found;
     }
 }
