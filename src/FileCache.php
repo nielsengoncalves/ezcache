@@ -42,6 +42,8 @@ class FileCache implements CacheInterface
      * Set the cache namespace.
      *
      * @param string $namespace the cache namespace.
+     *
+     * @return bool true on success or false on failure.
      */
     public function setNamespace(string $namespace) : bool
     {
