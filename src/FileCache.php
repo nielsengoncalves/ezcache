@@ -225,6 +225,8 @@ class FileCache implements CacheInterface
     /**
      * Return the base path where the cache files should be located.
      *
+     * @param string $namespace the namespace
+     *
      * @return string the file path
      */
     private function getBasePath(string $namespace = null) : string
