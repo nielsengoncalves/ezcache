@@ -47,11 +47,11 @@ class FileCache implements CacheInterface {
         $namespace = trim($namespace, '//, ');
         $dir = $this->getBasePath($namespace);
 
-        if ((is_dir($dir) && is_writable($dir)) || mkdir($dir, 0755)) {
+        if ((is_dir($dir) && is_writable($dir)) || @mkdir($dir, 0755)) {
             $this->namespace = $namespace;
             return true;
         }
-
+        $this->setLastError(new CacheException("The $dir is not writable or it was not possible to create the directory."));
         return false;
     }
 
@@ -179,7 +179,7 @@ class FileCache implements CacheInterface {
     public function setCacheDirectory(string $cacheDirectory) : bool {
         $this->cacheDirectory = null;
         $cacheDirectory = rtrim($cacheDirectory, '//, ') . '/';
-        if (!((file_exists($cacheDirectory) && is_writable($cacheDirectory)) || mkdir($cacheDirectory, 0755, true))) {
+        if (!((file_exists($cacheDirectory) && is_writable($cacheDirectory)) || @mkdir($cacheDirectory, 0755, true))) {
             $this->setLastError(new Exception("Failed to use $cacheDirectory as cache directory."));
             return false;
         }
