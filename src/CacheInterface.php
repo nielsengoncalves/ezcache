@@ -2,8 +2,8 @@
 
 namespace Ezcache\Cache;
 
-interface CacheInterface {
-
+interface CacheInterface
+{
     public function setNamespace(string $namespace): bool;
 
     public function set(string $key, $value, int $ttl = null) : bool;
@@ -17,5 +17,4 @@ interface CacheInterface {
     public function renew(string $key, int $ttl) : bool;
 
     public function clear(string $namespace = null) : bool;
-
 }

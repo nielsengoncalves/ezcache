@@ -2,6 +2,6 @@
 
 namespace Ezcache\Cache;
 
-interface CacheExceptionInterface {
-
+interface CacheExceptionInterface
+{
 }

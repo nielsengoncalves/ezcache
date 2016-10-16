@@ -3,19 +3,20 @@
 namespace Ezcache\Cache;
 
 /**
- * Trait CacheUtilsTrait
+ * Trait CacheUtilsTrait.
  */
-trait CacheUtilsTrait {
-
+trait CacheUtilsTrait
+{
     /**
-     * Glob that is safe with streams (vfs for example)
+     * Glob that is safe with streams (vfs for example).
      *
-     * @param string $directory the directory
+     * @param string $directory   the directory
      * @param string $filePattern the file pattern
      *
      * @return array containing match files
      */
-    public function streamSafeGlob($directory, $filePattern) : array {
+    public function streamSafeGlob($directory, $filePattern) : array
+    {
         $files = scandir($directory);
         $found = [];
 
