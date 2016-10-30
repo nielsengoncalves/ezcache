@@ -9,15 +9,19 @@ class MemcachedTest extends PHPUnit_Framework_TestCase
 {
     /** @var mixed */
     private $memcached;
-    public function setUp() {
+
+    public function setUp()
+    {
         $this->memcached = $this->getMockBuilder('Memcached')->getMock();
     }
 
-    public function testConstruct() {
+    public function testConstruct()
+    {
         new MemCached($this->memcached, 0, 'testNS');
     }
 
-    public function testSet() {
+    public function testSet()
+    {
         $this->memcached->method('set')
             ->will($this->onConsecutiveCalls(true, true));
 
