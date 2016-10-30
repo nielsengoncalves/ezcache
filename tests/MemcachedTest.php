@@ -33,5 +33,4 @@ class MemcachedTest extends PHPUnit_Framework_TestCase
         $testSet2 = $memcached->set('ANY_KEY', [], 2);
         $this->assertTrue($testSet2);
     }
-
 }
