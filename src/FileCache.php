@@ -63,7 +63,7 @@ class FileCache implements CacheInterface
     /**
      * Set a value to a key on cache.
      *
-     * @param string   $key   the key to be setted.
+     * @param string   $key   the key to be set.
      * @param mixed    $value the correspondent value of that cache key.
      * @param int|null $ttl   the cache life time in seconds (If no value passed will use the default value).
      *
@@ -99,7 +99,7 @@ class FileCache implements CacheInterface
         $fileData = $this->getFileData($key);
 
         if (empty($fileData) || (date('Y-m-d H:i:s') > $fileData['expires_at'])) {
-            return;
+            return null;
         }
 
         return unserialize($fileData['value']);
