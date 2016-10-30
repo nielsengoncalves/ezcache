@@ -34,7 +34,7 @@ class MemCached implements CacheInterface
     }
 
     /**
-     * Set the cache namespace
+     * Set the cache namespace.
      *
      * @param string $namespace the cache namespace
      *
@@ -43,12 +43,11 @@ class MemCached implements CacheInterface
     public function setNamespace(string $namespace) : bool
     {
         $this->namespace = $namespace;
+
         return true;
     }
 
     /**
-     * Set a value to a key on cache.
-     *
      * Set a value to a key on cache.
      *
      * @param string   $key   the key to be set.
@@ -61,6 +60,7 @@ class MemCached implements CacheInterface
     {
         $ttl = $ttl ?? $this->ttl;
         $key = $this->namespacedKey($key);
+
         return $this->memcachedInstance->set($key, $value, $ttl);
     }
 
@@ -78,7 +78,6 @@ class MemCached implements CacheInterface
         if ($this->exists($key)) {
             return $value;
         }
-        return null;
     }
 
     /**
@@ -91,6 +90,7 @@ class MemCached implements CacheInterface
     public function delete(string $key) : bool
     {
         $key = $this->namespacedKey($key);
+
         return $this->memcachedInstance->delete($key);
     }
 
@@ -105,6 +105,7 @@ class MemCached implements CacheInterface
     public function exists(string $key, bool $isValid = false) : bool
     {
         $this->memcachedInstance->get($key);
+
         return $this->memcachedInstance->getResultCode() !== \Memcached::RES_NOTFOUND;
     }
 
@@ -123,11 +124,12 @@ class MemCached implements CacheInterface
         if ($this->exists($key)) {
             return $this->memcachedInstance->touch($key, $ttl);
         }
+
         return false;
     }
 
     /**
-     * Clear all cache records.If namespace set, just clear those that starts with the namespace
+     * Clear all cache records.If namespace set, just clear those that starts with the namespace.
      *
      * @param string|null $namespace the cache namespace.
      *
@@ -146,23 +148,25 @@ class MemCached implements CacheInterface
             return strpos($key, $namespace) === 0;
         });
 
-        array_walk($filteredCacheKeys, array($this, 'delete'));
+        array_walk($filteredCacheKeys, [$this, 'delete']);
 
         return true;
     }
 
     /**
      * Return the key with the namespace. Since Memcached doesn't support namespaces
-     * the method just simulate it by pre-pending some fixed string to the key
+     * the method just simulate it by pre-pending some fixed string to the key.
      *
      * @param string $key the key to prepend the namespace, if necessary
      *
      * @return string the "namespaced" key
      */
-    private function namespacedKey(string $key) : string {
+    private function namespacedKey(string $key) : string
+    {
         if ($this->namespace !== null) {
-            return $this->namespace . $key;
+            return $this->namespace.$key;
         }
+
         return $key;
     }
 }

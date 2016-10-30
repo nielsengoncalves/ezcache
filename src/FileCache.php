@@ -99,7 +99,7 @@ class FileCache implements CacheInterface
         $fileData = $this->getFileData($key);
 
         if (empty($fileData) || (date('Y-m-d H:i:s') > $fileData['expires_at'])) {
-            return null;
+            return;
         }
 
         return unserialize($fileData['value']);
